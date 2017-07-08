@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <script type="text/javascript" src="jquery-3.2.0.js"></script>
+    <script type="text/javascript" src="prefixfree.min.js"></script>
+    <style>
+        /*------------------------重置样式-----------------------*/
+        body{
+            margin: 0;
+            padding: 0;
+        }
+        ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        a{
+            text-decoration: none;
+            color: black;
+        }
+        /*------------布局样式：为了设置居中-----------*/
+        .container-for-layout{
+            position: absolute;
+            top:50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+            -webkit-transform: translate(-50%,-50%);
+            height: 500px;
+            width: 900px;
+            background-color: red;
+        }
+        /*---------------视口样式---------------*/
+        .view-port{
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+        /*------------------存放所有图片容器的样式---------*/
+        .items-container{
+            height: 100%;
+            width: 3600px;
+            background-color: antiquewhite;
+            transition: transform 1s;
+            -webkit-transform-style: preserve-3d;
+            -webkit-backface-visibility: hidden;
+        }
+        .item{
+            float: left;
+            height: 500px;
+            width: 900px;
+        }
+        .item-bg-1,.item-bg-2,.item-bg-3,.item-bg-4{
+            height: 500px;
+            width: 900px;
+            background-size: 100% 100%;
+        }
+        .item-bg-1{
+            background-image: url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/142996/3d-slider-3.jpg");
+        }
+        .item-bg-2{
+            background-image: url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/142996/3d-slider-2.jpg");
+        }
+        .item-bg-3{
+            background-image: url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/142996/3d-slider-1.jpg");
+        }
+        .item-bg-4{
+            background-image: url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/142996/3d-slider-4.jpg");
+        }
+        /*------------------左右控制按钮样式--------------*/
+        .control-right,.control-left{
+            font-size: 40px;
+            position: absolute;
+            line-height: 40px;
+            top: 45%;
+            cursor: pointer;
+            height: 40px;
+            width: 40px;
+            background-color: rgba(000,000,000,.5);
+            color: wheat;
+            z-index: 1;
+        }
+        .control-right{
+            right: 5%;
+        }
+        .control-left{
+            left: 5%;
+        }
+        /*-----------------------底部导航栏的样式---------------*/
+        .control-bottom-li.active {
+            background-color: wheat;
+        }
+        .control-bottom-li{
+            float: left;
+            border-radius: 50%;
+            background-color: rgba(245,222,179,.3);
+            height: 20px;
+            width: 20px;
+            margin: 10px;
+            transition: background 1s;
+        }
+        .control-bottom-li:hover{
+            background-color: wheat;
+        }
+        .control-bottom-layout{
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translate(-50%,0);
+            z-index: 1;
+        }
+        .control-bottom:after{
+            content:"";
+            display:table;
+            clear:both;
+        }
+        /*---------------两端无缝转换的样式-------------*/
+        .item.start{
+
+        }
+    </style>
+</head>
+<body>
+<div class="container-for-layout">
+    <div class="view-port">
+        <div class="control-left">
+            &leftarrow;
+        </div>
+        <div class="control-right">
+            &rightarrow;
+        </div>
+        <div class="control-bottom-layout">
+            <ul class="control-bottom">
+            </ul>
+        </div>
+        <div class="items-container">
+            <div class="item">
+                <div class="item-bg-1"></div>
+                <div class="item-content">
+                </div>
+            </div>
+            <div class="item">
+                <div class="item-bg-2"></div>
+                <div class="item-content">
+                </div>
+            </div>
+            <div class="item">
+                <div class="item-bg-3"></div>
+                <div class="item-content">
+                </div>
+            </div>
+            <div class="item">
+                <div class="item-bg-4"></div>
+                <div class="item-content">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var curNumber=0;//保存当前页面的序号
+    var allNumbers=$(".item").length-1;//保存页面中一共有多少页面
+    function createIndicator() {
+        for(var i=0;i<allNumbers+1;i++){
+           var li=$("<li class='control-bottom-li'></li>");
+            if (i == 0) li.addClass("active");
+            $(".control-bottom").append(li);
+        }
+    }
+    function setContainerWidth() {
+        $(".items-container").css("width",(allNumbers+1)*900);
+    }
+    setContainerWidth();
+    createIndicator();
+    function changePage() {
+        $(".items-container").css("transform","translate3d("+(-900*curNumber)+"px,0,0)");
+        changeColor();
+    }
+    function changeColor() {
+        $(".control-bottom-li").removeClass("active");
+        $(".control-bottom-li")[curNumber].className+=" active";
+    }
+    $(".control-left").on("click",function () {
+        rollLeft();
+    });
+    $(".control-right").on("click",function () {
+        rollRight();
+    });
+    setInterval(function () {
+        rollRight();
+    },5000)
+    function rollRight() {
+        curNumber===allNumbers?!(curNumber=0)&&changePage():(++curNumber)&&changePage();
+    }
+    function rollLeft() {
+        curNumber===0?(curNumber=allNumbers)&&(changePage()):(curNumber--)&&changePage();
+    }
+    $(".control-bottom-li").on("mouseover",function (event) {
+        for (var i=0;i<allNumbers+1;i++){
+            if(event.target===$(".control-bottom-li")[i]){
+                curNumber=i;
+                break
+            }
+        }
+        changePage();
+    })
+</script>
+</body>
+</html>
